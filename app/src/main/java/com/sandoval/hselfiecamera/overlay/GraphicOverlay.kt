@@ -1,6 +1,7 @@
 package com.sandoval.hselfiecamera.overlay
 
 import android.content.Context
+import android.graphics.Canvas
 import android.util.AttributeSet
 import android.view.View
 import com.sandoval.hselfiecamera.camera.CameraConfiguration
@@ -19,21 +20,38 @@ class GraphicOverlay(
         private set
     var cameraFacing = CameraConfiguration.CAMERA_FACING_FRONT
         private set
+    private val graphics: MutableList<BaseGraphic> = ArrayList()
 
-    fun addGraphic(){
-
+    fun addGraphic(graphic: BaseGraphic) {
+        synchronized(lock) { graphics.add(graphic) }
     }
 
-    fun clear(){
-
+    fun clear() {
+        synchronized(lock) { graphics.clear() }
+        this.postInvalidate()
     }
 
-    fun setCameraInfo (width: Int, height: Int, facing: Int){
-        synchronized(lock){
+    fun setCameraInfo(width: Int, height: Int, facing: Int) {
+        synchronized(lock) {
             previewWidth = width
             previewHeight = height
             cameraFacing = facing
         }
         this.postInvalidate()
+    }
+
+    override fun onDraw(canvas: Canvas?) {
+        super.onDraw(canvas)
+        synchronized(lock) {
+            if (previewWidth != 0 && previewHeight != 0) {
+                widtScaleValue =
+                    width.toFloat() / previewWidth.toFloat()
+                heightScaleValue =
+                    height.toFloat() / previewHeight.toFloat()
+            }
+            for (graphic in graphics) {
+                graphic.draw(canvas)
+            }
+        }
     }
 }
