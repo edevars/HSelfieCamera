@@ -1,4 +1,4 @@
-package com.sandoval.hselfiecamera
+package com.sandoval.hselfiecamera.auth
 
 import android.app.Activity
 import android.content.Intent
@@ -8,6 +8,8 @@ import android.widget.Toast
 import com.huawei.hms.support.hwid.HuaweiIdAuthManager
 import com.huawei.hms.support.hwid.request.HuaweiIdAuthParams
 import com.huawei.hms.support.hwid.request.HuaweiIdAuthParamsHelper
+import com.sandoval.hselfiecamera.R
+import com.sandoval.hselfiecamera.main.MainActivity
 import kotlinx.android.synthetic.main.activity_auth.*
 
 class AuthActivity : AppCompatActivity() {
@@ -41,7 +43,10 @@ class AuthActivity : AppCompatActivity() {
             } else if (resultCode == Activity.RESULT_OK){
                 val authHuaweiIdTask = HuaweiIdAuthManager.parseAuthResultFromIntent(data)
                 if (authHuaweiIdTask.isSuccessful){
-                    Toast.makeText(this, "Login Exitoso!", Toast.LENGTH_LONG).show()
+                    //Toast.makeText(this, "Login Exitoso!", Toast.LENGTH_LONG).show()
+                    val intent = Intent(this, MainActivity::class.java)
+                    startActivity(intent)
+                    finish()
                 } else {
                     Toast.makeText(this, "Login Fallo!", Toast.LENGTH_LONG).show()
                 }
