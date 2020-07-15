@@ -18,6 +18,7 @@ import com.huawei.hms.support.hwid.request.HuaweiIdAuthParams
 import com.huawei.hms.support.hwid.request.HuaweiIdAuthParamsHelper
 import com.sandoval.hselfiecamera.R
 import com.sandoval.hselfiecamera.auth.AuthActivity
+import com.sandoval.hselfiecamera.face.LiveFaceActivityCamera
 import kotlinx.android.synthetic.main.activity_home.*
 import java.lang.Exception
 import java.lang.RuntimeException
@@ -50,6 +51,11 @@ class MainActivity : AppCompatActivity() {
 
         btnLogout.setOnClickListener {
             logoutWithHuaweiID()
+        }
+
+        mostPeople.setOnClickListener {
+            val intent = Intent(this@MainActivity, LiveFaceActivityCamera::class.java)
+            startActivity(intent)
         }
     }
 
