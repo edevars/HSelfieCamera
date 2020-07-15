@@ -29,8 +29,59 @@ class LensEnginePreview(context: Context, attrs: AttributeSet?) : ViewGroup(cont
         this.addView(mSurfaceView)
     }
 
-    override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
-        TODO("Not yet implemented")
+    override fun onLayout(
+        changed: Boolean,
+        left: Int,
+        top: Int,
+        right: Int,
+        bottom: Int
+    ) {
+        var previewWidth = 320
+        var previewHeight = 240
+        if (mLensEngine != null) {
+            val size: Size? = mLensEngine!!.displayDimension
+            if (size != null) {
+                previewHeight = size.height
+                previewWidth = size.width
+            }
+        }
+        if (mContext.resources
+                .configuration.orientation == Configuration.ORIENTATION_PORTRAIT
+        ) {
+            val tmp = previewWidth
+            previewWidth = previewHeight
+            previewHeight = tmp
+        }
+
+        val viewWidth = right - left
+        val viewHeight = bottom - top
+        val childWidth: Int
+        val childHeight: Int
+        var childXOffset = 0
+        var childYOffset = 0
+        val widthRatio = viewWidth.toFloat() / previewWidth.toFloat()
+        val heightRation = viewHeight.toFloat() / previewHeight.toFloat()
+
+        if (widthRatio > heightRation) {
+            childWidth = viewWidth
+            childHeight = (previewHeight.toFloat() * heightRation).toInt()
+            childYOffset = (childHeight - viewHeight) / 2
+        } else {
+            childWidth = (previewHeight.toFloat() * heightRation).toInt()
+            childHeight = viewHeight
+            childXOffset = (childWidth - viewWidth) / 2
+        }
+        for (i in 0 until this.childCount) {
+            getChildAt(i).layout(
+                -1 * childXOffset, -1 * childYOffset, childWidth - childXOffset,
+                childHeight - childYOffset
+            )
+        }
+        try {
+            startIfReady()
+        } catch (e: IOException) {
+            Log.e("Error", "No se pudo iniciar la camara")
+        }
     }
 
     @Throws(IOException::class)
@@ -86,7 +137,6 @@ class LensEnginePreview(context: Context, attrs: AttributeSet?) : ViewGroup(cont
 
     private inner class SurfaceCallback : SurfaceHolder.Callback {
 
-
         override fun surfaceChanged(
             holder: SurfaceHolder?,
             format: Int,
@@ -107,7 +157,5 @@ class LensEnginePreview(context: Context, attrs: AttributeSet?) : ViewGroup(cont
                 Log.e("Error: ", "No pudimos iniciar la camra $e")
             }
         }
-
     }
-
 }
