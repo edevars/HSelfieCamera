@@ -48,7 +48,7 @@ class LocalFaceGraphic(
         val rect = Rect(
             translateX(horizontalMin).toInt(),
             translateY(verticalMin).toInt(),
-            translateY(horizontalMax).toInt(),
+            translateX(horizontalMax).toInt(),
             translateY(verticalMax).toInt()
         )
         canvas!!.drawRect(rect, facePaint)
