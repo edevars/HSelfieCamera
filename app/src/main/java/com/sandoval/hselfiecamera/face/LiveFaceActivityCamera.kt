@@ -21,7 +21,7 @@ import com.sandoval.hselfiecamera.overlay.LocalFaceGraphic
 import java.io.IOException
 import java.lang.RuntimeException
 
-class LiveFaceActivityCamera : AppCompatActivity() {
+class LiveFaceActivityCamera : AppCompatActivity(), View.OnClickListener {
 
     private var analyzer: MLFaceAnalyzer? = null
     private var mLensEngine: LensEngine? = null
@@ -29,6 +29,8 @@ class LiveFaceActivityCamera : AppCompatActivity() {
     private var overlay: GraphicOverlay? = null
     private var lensType = LensEngine.FRONT_LENS
     private var detectMode = 0
+    private var isFront = false
+    private val smilingRate = 0.8f
     private val smilingPossibility = 0.95f
     private var safeToTakePicture = false
     private var restart: Button? = null
@@ -47,6 +49,7 @@ class LiveFaceActivityCamera : AppCompatActivity() {
             Log.e("Error: ", "No pude traer el codigo de deteccion")
         }
         overlay = findViewById(R.id.face_overlay)
+        findViewById<View>(R.id.facingSwitch).setOnClickListener(this)
         restart = findViewById(R.id.restart)
         createFaceAnalyzer()
         createLensEngine()
@@ -136,9 +139,25 @@ class LiveFaceActivityCamera : AppCompatActivity() {
                     }
                 }).create()
             analyzer!!.setTransactor(transactor)
-        }
-        else {
-            // Validacion de rostro grupal
+        } else {
+            analyzer!!.setTransactor(object : MLAnalyzer.MLTransactor<MLFace> {
+                override fun transactResult(result: MLAnalyzer.Result<MLFace>?) {
+                    val faceSparseArray = result!!.analyseList
+                    var flag = 0
+                    for (i in 0 until faceSparseArray.size()) {
+                        val emotion = faceSparseArray.valueAt(i).emotions
+                        if (emotion.smilingProbability > smilingPossibility) {
+                            flag++
+                        }
+                    }
+                    if (flag > faceSparseArray.size() * smilingRate && safeToTakePicture) {
+                        safeToTakePicture = false
+                    }
+                }
+
+                override fun destroy() {}
+
+            })
         }
     }
 
@@ -172,6 +191,19 @@ class LiveFaceActivityCamera : AppCompatActivity() {
         createFaceAnalyzer()
         createLensEngine()
         startLensEngine()
+    }
+
+    override fun onClick(v: View?) {
+        isFront = !isFront
+        if (isFront) {
+            lensType = LensEngine.FRONT_LENS
+        } else {
+            lensType = LensEngine.BACK_LENS
+        }
+        if (mLensEngine != null) {
+            mLensEngine!!.close()
+        }
+        startPreview(v)
     }
 
 }
