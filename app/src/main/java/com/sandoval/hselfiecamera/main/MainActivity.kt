@@ -55,6 +55,13 @@ class MainActivity : AppCompatActivity() {
 
         mostPeople.setOnClickListener {
             val intent = Intent(this@MainActivity, LiveFaceActivityCamera::class.java)
+            intent.putExtra("detect_mode", 1002)
+            startActivity(intent)
+        }
+
+        nearestPeople.setOnClickListener {
+            val intent = Intent(this@MainActivity, LiveFaceActivityCamera::class.java)
+            intent.putExtra("detect_mode", 1003)
             startActivity(intent)
         }
     }

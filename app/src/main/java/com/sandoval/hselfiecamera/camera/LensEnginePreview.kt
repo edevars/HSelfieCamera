@@ -25,7 +25,7 @@ class LensEnginePreview(context: Context, attrs: AttributeSet?) : ViewGroup(cont
         mStartRequested = false
         mSurfaceAvailable = false
         mSurfaceView = SurfaceView(context)
-        // Nuestra vista va a pedir un callback para agregar el lente
+        mSurfaceView.holder.addCallback(SurfaceCallback())
         this.addView(mSurfaceView)
     }
 
@@ -67,7 +67,7 @@ class LensEnginePreview(context: Context, attrs: AttributeSet?) : ViewGroup(cont
             childHeight = (previewHeight.toFloat() * heightRation).toInt()
             childYOffset = (childHeight - viewHeight) / 2
         } else {
-            childWidth = (previewHeight.toFloat() * heightRation).toInt()
+            childWidth = (previewWidth.toFloat() * heightRation).toInt()
             childHeight = viewHeight
             childXOffset = (childWidth - viewWidth) / 2
         }
