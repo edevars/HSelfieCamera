@@ -1,7 +1,10 @@
 package com.sandoval.hselfiecamera.face
 
 import android.content.Context
+import android.content.Intent
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
@@ -21,6 +24,8 @@ import com.sandoval.hselfiecamera.R
 import com.sandoval.hselfiecamera.camera.LensEnginePreview
 import com.sandoval.hselfiecamera.overlay.GraphicOverlay
 import com.sandoval.hselfiecamera.overlay.LocalFaceGraphic
+import java.io.File
+import java.io.FileOutputStream
 import java.io.IOException
 import java.lang.RuntimeException
 
@@ -241,8 +246,33 @@ class LiveFaceActivityCamera : AppCompatActivity(), View.OnClickListener {
                 val bitmap = BitmapFactory.decodeByteArray(
                     bytes, 0, bytes.size
                 )
+                saveBitmapToGallery(bitmap)
             }
         )
+    }
+
+    private fun saveBitmapToGallery(bitmap: Bitmap): String {
+        val appDir = File("/storage/emulated/0/DCIM/Camera")
+        if (!appDir.exists()) {
+            val res: Boolean = appDir.mkdir()
+            if (!res) {
+                Log.e("Error:", "No pudimos crear el directorio")
+                return ""
+            }
+        }
+        val fileName = "HSelfieCamera" + System.currentTimeMillis() + ".jpg"
+        val file = File(appDir, fileName)
+        try {
+            val fos = FileOutputStream(file)
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos)
+            fos.flush()
+            fos.close()
+            val uri: Uri = Uri.fromFile(file)
+            this.sendBroadcast(Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, uri))
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+        return file.absolutePath
     }
 
     private val mHandler: Handler = object : Handler() {
