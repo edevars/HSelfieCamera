@@ -1,8 +1,11 @@
 package com.sandoval.hselfiecamera.face
 
 import android.content.Context
+import android.graphics.BitmapFactory
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Handler
+import android.os.Message
 import android.util.Log
 import android.view.View
 import android.widget.Button
@@ -107,6 +110,7 @@ class LiveFaceActivityCamera : AppCompatActivity(), View.OnClickListener {
                         val emotion = obj.emotions
                         if (emotion.smilingProbability > smilingPossibility) {
                             safeToTakePicture = false
+                            mHandler.sendEmptyMessage(TAKE_PHOTO)
                         }
                     }
 
@@ -127,6 +131,7 @@ class LiveFaceActivityCamera : AppCompatActivity(), View.OnClickListener {
                         val emotion = obj.emotions
                         if (emotion.smilingProbability > smilingPossibility && safeToTakePicture) {
                             safeToTakePicture = false
+                            mHandler.sendEmptyMessage(TAKE_PHOTO)
                         }
                     }
 
@@ -152,6 +157,7 @@ class LiveFaceActivityCamera : AppCompatActivity(), View.OnClickListener {
                     }
                     if (flag > faceSparseArray.size() * smilingRate && safeToTakePicture) {
                         safeToTakePicture = false
+                        mHandler.sendEmptyMessage(TAKE_PHOTO)
                     }
                 }
 
@@ -179,6 +185,7 @@ class LiveFaceActivityCamera : AppCompatActivity(), View.OnClickListener {
                 } else {
                     mPreview!!.start(mLensEngine)
                 }
+                safeToTakePicture = true
             } catch (e: IOException) {
                 mLensEngine!!.release()
                 mLensEngine = null
@@ -204,6 +211,51 @@ class LiveFaceActivityCamera : AppCompatActivity(), View.OnClickListener {
             mLensEngine!!.close()
         }
         startPreview(v)
+    }
+
+    companion object {
+        private const val STOP_PREVIEW = 1
+        private const val TAKE_PHOTO = 2
+    }
+
+    fun stopPreview() {
+        restart!!.setVisibility(View.VISIBLE)
+        if (mLensEngine != null) {
+            mLensEngine!!.release()
+            safeToTakePicture = false
+        }
+        if (analyzer != null) {
+            try {
+                analyzer!!.stop()
+            } catch (e: IOException) {
+                Log.e("Error:", "No pudimos parar la camara")
+            }
+        }
+    }
+
+    private fun takePhoto() {
+        mLensEngine!!.photograph(
+            null,
+            LensEngine.PhotographListener { bytes ->
+                mHandler.sendEmptyMessage(STOP_PREVIEW)
+                val bitmap = BitmapFactory.decodeByteArray(
+                    bytes, 0, bytes.size
+                )
+            }
+        )
+    }
+
+    private val mHandler: Handler = object : Handler() {
+        override fun handleMessage(msg: Message) {
+            super.handleMessage(msg)
+            when (msg.what) {
+                STOP_PREVIEW -> stopPreview()
+                TAKE_PHOTO -> takePhoto()
+                else -> {
+
+                }
+            }
+        }
     }
 
 }
