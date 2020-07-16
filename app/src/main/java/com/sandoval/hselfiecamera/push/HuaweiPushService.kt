@@ -14,7 +14,7 @@ import kotlin.concurrent.thread
 class HuaweiPushService : HmsMessageService() {
 
     companion object {
-        private const val TAG = "HuaweiPushServce"
+        private const val TAG = "HuaweiPushService"
     }
 
     override fun onMessageReceived(remoteMessage: RemoteMessage?) {
